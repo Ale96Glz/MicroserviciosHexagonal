@@ -7,14 +7,14 @@ public class OutboxMessageMapper {
     
     public static OutboxJpaEntity toJpaEntity(OutboxMessage outboxMessage) {
         OutboxJpaEntity jpaEntity = new OutboxJpaEntity();
-        jpaEntity.setId(outboxMessage.id());
-        jpaEntity.setAggregateType(outboxMessage.aggregateType());
-        jpaEntity.setAggregateId(outboxMessage.aggregateId());
-        jpaEntity.setEventType(outboxMessage.eventType());
-        jpaEntity.setPayload(outboxMessage.payload());
-        jpaEntity.setStatus(mapToJpaStatus(outboxMessage.status()));
-        jpaEntity.setCreatedAt(outboxMessage.createdAt());
-        jpaEntity.setProcessedAt(outboxMessage.processedAt());
+        jpaEntity.setId(outboxMessage.getId());
+        jpaEntity.setAggregateType(outboxMessage.getAggregateType());
+        jpaEntity.setAggregateId(outboxMessage.getAggregateId());
+        jpaEntity.setEventType(outboxMessage.getEventType());
+        jpaEntity.setPayload(outboxMessage.getPayload());
+        jpaEntity.setStatus(mapToJpaStatus(outboxMessage.getStatus()));
+        jpaEntity.setCreatedAt(outboxMessage.getCreatedAt());
+        jpaEntity.setProcessedAt(outboxMessage.getProcessedAt());
         return jpaEntity;
     }
     
@@ -34,6 +34,7 @@ public class OutboxMessageMapper {
     private static OutboxJpaEntity.OutboxStatusJpa mapToJpaStatus(Status domainStatus) {
         return switch (domainStatus) {
             case PENDING -> OutboxJpaEntity.OutboxStatusJpa.PENDING;
+            case PROCESSING -> OutboxJpaEntity.OutboxStatusJpa.PROCESSING;
             case PROCESSED -> OutboxJpaEntity.OutboxStatusJpa.PROCESSED;
             case FAILED -> OutboxJpaEntity.OutboxStatusJpa.FAILED;
         };
@@ -42,6 +43,7 @@ public class OutboxMessageMapper {
     private static Status mapToDomainStatus(OutboxJpaEntity.OutboxStatusJpa jpaStatus) {
         return switch (jpaStatus) {
             case PENDING -> Status.PENDING;
+            case PROCESSING -> Status.PROCESSING;
             case PROCESSED -> Status.PROCESSED;
             case FAILED -> Status.FAILED;
         };

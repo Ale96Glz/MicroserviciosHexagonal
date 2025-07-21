@@ -23,12 +23,18 @@ import java.util.List;
  * - A list of domain events
  */
 public class Order {
+    private Long id;
     private final OrderNumber orderNumber;
     private final String customerId;
     private final LocalDateTime orderDate;
     private final List<OrderItem> items;
-    private final OrderStatus status;
+    private OrderStatus status;
     private final List<DomainEvent> domainEvents = new ArrayList<>();
+
+    public Order(Long id, OrderNumber orderNumber, String customerId, LocalDateTime orderDate, List<OrderItem> items, OrderStatus status) {
+        this(orderNumber, customerId, orderDate, items, status);
+        this.id = id;
+    }
 
     public Order(OrderNumber orderNumber, String customerId, LocalDateTime orderDate, List<OrderItem> items, OrderStatus status) {
         if (orderNumber == null) {
@@ -53,6 +59,13 @@ public class Order {
         this.status = status;
         // Add domain event for order creation
         domainEvents.add(new OrderCreatedEvent(null, orderNumber));
+    }
+
+    public Long getId() {
+        return id;
+    }
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public OrderNumber getOrderNumber() {
@@ -107,6 +120,17 @@ public class Order {
         }
         // TODO: Enforce business rules here (e.g., order must have at least one item)
         this.items.remove(item);
+    }
+
+    /**
+     * Confirma la orden, cambiando su estado a CONFIRMED y generando el evento de dominio.
+     */
+    public void confirm() {
+        if (this.status == OrderStatus.CONFIRMED) {
+            throw new IllegalStateException("La orden ya está confirmada");
+        }
+        this.status = OrderStatus.CONFIRMED;
+        domainEvents.add(new com.example.hexagonalorders.domain.event.OrderConfirmedEvent(this.orderNumber));
     }
 
     // equals, hashCode, and toString can be added as needed

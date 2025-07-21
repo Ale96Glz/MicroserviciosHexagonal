@@ -11,6 +11,13 @@ public interface OutboxRepository {
     
     List<OutboxMessage> findPending(int limit);
     
+    /**
+     * Finds all pending outbox messages for processing.
+     * 
+     * @return list of pending outbox messages
+     */
+    List<OutboxMessage> findPendingMessages();
+    
     void markProcessed(UUID id);
     
     void markFailed(UUID id);

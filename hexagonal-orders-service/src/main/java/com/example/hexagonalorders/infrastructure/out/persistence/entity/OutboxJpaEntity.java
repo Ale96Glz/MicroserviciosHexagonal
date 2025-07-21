@@ -40,7 +40,7 @@ public class OutboxJpaEntity {
    private Instant processedAt;
   
    public enum OutboxStatusJpa {
-       PENDING, PROCESSED, FAILED
+       PENDING, PROCESSING, PROCESSED, FAILED
    }
 
    public UUID getId() {

@@ -40,6 +40,16 @@ public class OutboxRepositoryAdapter implements OutboxRepository {
     }
     
     @Override
+    public List<OutboxMessage> findPendingMessages() {
+        List<OutboxJpaEntity> jpaEntities = outboxMessageJpaRepository
+            .findByStatusOrderByCreatedAtAsc(OutboxJpaEntity.OutboxStatusJpa.PENDING);
+        
+        return jpaEntities.stream()
+            .map(OutboxMessageMapper::toDomainModel)
+            .collect(Collectors.toList());
+    }
+    
+    @Override
     public void markProcessed(UUID id) {
         outboxMessageJpaRepository.findById(id).ifPresent(jpaEntity -> {
             jpaEntity.setStatus(OutboxJpaEntity.OutboxStatusJpa.PROCESSED);

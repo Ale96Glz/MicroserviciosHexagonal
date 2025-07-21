@@ -31,6 +31,7 @@ public class OrderRepositoryAdapter implements OrderRepository {
     }
     
     public OrderWithId saveWithId(Order order) {
+        System.out.println("[DEBUG] Guardando orden con número: " + order.getOrderNumber().value());
         OrderJpaEntity savedEntity = orderJpaRepository.save(orderJpaMapper.toJpaEntity(order));
         return new OrderWithId(orderJpaMapper.toDomain(savedEntity), savedEntity.getId());
     }

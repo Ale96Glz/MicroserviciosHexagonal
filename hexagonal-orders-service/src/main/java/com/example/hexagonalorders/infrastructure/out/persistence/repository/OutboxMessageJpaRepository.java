@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface OutboxMessageJpaRepository extends JpaRepository<OutboxJpaEntity, java.util.UUID> {
     List<OutboxJpaEntity> findTopNByStatusOrderByCreatedAtAsc(OutboxJpaEntity.OutboxStatusJpa status, Pageable pageable);
+    
+    List<OutboxJpaEntity> findByStatusOrderByCreatedAtAsc(OutboxJpaEntity.OutboxStatusJpa status);
 } 

@@ -38,4 +38,10 @@ public interface OrderUseCase {
      * @param orderNumber the order number
      */
     void deleteOrder(OrderNumber orderNumber);
+
+    /**
+     * Confirma una orden por su número de orden
+     * @param orderNumber el número de la orden
+     */
+    void confirmOrder(OrderNumber orderNumber);
 } 

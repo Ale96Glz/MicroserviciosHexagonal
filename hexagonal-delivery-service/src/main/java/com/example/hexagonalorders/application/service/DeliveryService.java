@@ -4,10 +4,12 @@ import com.example.hexagonalorders.domain.model.Delivery;
 import com.example.hexagonalorders.domain.model.DeliveryStatus;
 import com.example.hexagonalorders.domain.model.valueobject.DeliveryId;
 import com.example.hexagonalorders.domain.model.valueobject.DeliveryDate;
+import com.example.hexagonalorders.domain.model.valueobject.DeliveryAddress;
 import com.example.hexagonalorders.domain.port.in.DeliveryUseCase;
 import com.example.hexagonalorders.domain.port.out.DeliveryRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -130,5 +132,48 @@ public class DeliveryService implements DeliveryUseCase {
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Estado de entrega inválido: " + status);
         }
+    }
+    
+    /**
+     * Crea una entrega a partir de un evento de confirmación de orden.
+     * Este método es llamado por el consumidor de Kafka cuando una orden es confirmada.
+     *
+     * @param orderId el identificador de la orden
+     * @param customerAddress la dirección de entrega del cliente
+     * @param items los ítems de la orden (para uso futuro en planificación de entrega)
+     */
+    public Delivery createDeliveryFromOrder(String orderId, String customerAddress, 
+                                          List<com.example.hexagonalorders.infrastructure.in.messaging.OrderEventConsumer.OrderItem> items) {
+        DeliveryId deliveryId = new DeliveryId(UUID.randomUUID().toString());
+        
+        // Analizar dirección del cliente (asumiendo que es una cadena simple por ahora)
+        // En un escenario real, podrías querer analizar esto en componentes de dirección estructurados
+        DeliveryAddress address = new DeliveryAddress(
+            customerAddress, // calle
+            "Ciudad Desconocida",  // ciudad - podrías extraer esto de customerAddress
+            "Estado Desconocido", // estado
+            "00000",         // código postal
+            "País Desconocido" // país
+        );
+        
+        DeliveryDate scheduledDate = new DeliveryDate(LocalDateTime.now().plusDays(1)); // Por defecto: día siguiente
+        
+        Delivery delivery = new Delivery(
+            deliveryId,
+            orderId,
+            address,
+            scheduledDate,
+            DeliveryStatus.CREATED,
+            "Entrega creada desde orden confirmada: " + orderId
+        );
+        
+        Delivery savedDelivery = deliveryRepository.save(delivery);
+        
+        // Registrar eventos de dominio para depuración
+        savedDelivery.getDomainEvents().forEach(event -> {
+            System.out.println("Evento de dominio publicado: " + event.getClass().getSimpleName());
+        });
+        
+        return savedDelivery;
     }
 } 

@@ -2,6 +2,7 @@ package com.example.hexagonalorders;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.kafka.annotation.EnableKafka;
 
 /**
  * Main application class for the Hexagonal Orders system.
@@ -16,6 +17,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * - Infrastructure layer containing adapters and external services
  */
 @SpringBootApplication
+@EnableKafka
 public class HexagonalOrdersApplication {
     public static void main(String[] args) {
         SpringApplication.run(HexagonalOrdersApplication.class, args);

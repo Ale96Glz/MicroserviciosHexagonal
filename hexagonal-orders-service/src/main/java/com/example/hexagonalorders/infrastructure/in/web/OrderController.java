@@ -5,6 +5,7 @@ import com.example.hexagonalorders.domain.model.valueobject.OrderNumber;
 import com.example.hexagonalorders.domain.port.in.OrderUseCase;
 import com.example.hexagonalorders.infrastructure.in.web.dto.OrderDto;
 import com.example.hexagonalorders.infrastructure.in.web.dto.OrderResponseDto;
+import com.example.hexagonalorders.infrastructure.in.web.dto.OrderConfirmationResponseDto;
 import com.example.hexagonalorders.infrastructure.in.web.mapper.OrderMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -40,6 +41,9 @@ public class OrderController {
     })
     @PostMapping
     public ResponseEntity<OrderResponseDto> createOrder(@RequestBody OrderDto orderDto) {
+        if (orderDto.getOrderNumber() != null && !orderDto.getOrderNumber().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
         OrderMapper.OrderCreationData orderData = orderMapper.createOrderData(orderDto);
         
         // Usar el método que devuelve el id
@@ -74,5 +78,34 @@ public class OrderController {
     public ResponseEntity<Void> deleteOrder(@PathVariable String orderNumber) {
         orderUseCase.deleteOrder(new OrderNumber(orderNumber));
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Confirmar una orden", description = "Confirma una orden y dispara el evento de dominio.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Orden confirmada exitosamente"),
+        @ApiResponse(responseCode = "404", description = "Orden no encontrada")
+    })
+    @PostMapping("/{orderNumber}/confirm")
+    public ResponseEntity<OrderConfirmationResponseDto> confirmOrder(@PathVariable String orderNumber) {
+        try {
+            orderUseCase.confirmOrder(new com.example.hexagonalorders.domain.model.valueobject.OrderNumber(orderNumber));
+            // Obtener la orden actualizada para retornarla
+            var orderWithId = ((com.example.hexagonalorders.application.service.OrderService) orderUseCase)
+                .getOrderWithId(new com.example.hexagonalorders.domain.model.valueobject.OrderNumber(orderNumber));
+            if (orderWithId.isPresent()) {
+                var order = orderWithId.get().getOrder();
+                return ResponseEntity.ok(new OrderConfirmationResponseDto(
+                    orderWithId.get().getId(),
+                    order.getOrderNumber().value(),
+                    order.getStatus().name()
+                ));
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 } 

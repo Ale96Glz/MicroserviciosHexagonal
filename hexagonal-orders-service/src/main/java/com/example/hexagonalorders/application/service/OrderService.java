@@ -53,6 +53,7 @@ public class OrderService implements OrderUseCase {
     @Transactional
     public Order createOrder(com.example.hexagonalorders.infrastructure.in.web.mapper.OrderMapper.OrderCreationData orderData) {
         OrderNumber orderNumber = orderNumberGenerator.generate();
+        System.out.println("[DEBUG] Creando orden con número: " + orderNumber.value());
 
         // Crear la orden con el número generado y los datos recibidos
         Order order = new Order(
@@ -83,6 +84,7 @@ public class OrderService implements OrderUseCase {
     
     public com.example.hexagonalorders.infrastructure.out.persistence.repository.OrderRepositoryAdapter.OrderWithId createOrderWithId(com.example.hexagonalorders.infrastructure.in.web.mapper.OrderMapper.OrderCreationData orderData) {
         OrderNumber orderNumber = orderNumberGenerator.generate();
+        System.out.println("[DEBUG] Creando orden con número: " + orderNumber.value());
 
         // Crear la orden con el número generado y los datos recibidos
         Order order = new Order(
@@ -130,6 +132,22 @@ public class OrderService implements OrderUseCase {
     @Transactional
     public void deleteOrder(OrderNumber orderNumber) {
         orderRepository.deleteByOrderNumber(orderNumber);
+    }
+
+    @Override
+    @Transactional
+    public void confirmOrder(OrderNumber orderNumber) {
+        Order order = orderRepository.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new IllegalArgumentException("Orden no encontrada: " + orderNumber.value()));
+        System.out.println("[DEBUG] Estado antes de confirmar: " + order.getStatus());
+        order.confirm();
+        System.out.println("[DEBUG] Estado después de confirmar: " + order.getStatus());
+        orderRepository.save(order);
+        for (DomainEvent event : order.getDomainEvents()) {
+            eventPublisher.publishEvent(event);
+            persistToOutbox(event, "Order", orderNumber.value());
+        }
+        order.clearDomainEvents();
     }
 
     /**
