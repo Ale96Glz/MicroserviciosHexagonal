@@ -43,13 +43,13 @@ public class OrderEventConsumer {
             
             // Crear entrega para la orden confirmada
             deliveryService.createDeliveryFromOrder(
-                event.getOrderId(),
+                event.getOrderNumber(),
                 event.getCustomerAddress(),
                 event.getItems()
             );
             
             logger.info("Evento de orden confirmada procesado exitosamente para la orden: {}", 
-                event.getOrderId());
+                event.getOrderNumber());
             
         } catch (Exception e) {
             logger.error("Error procesando evento de orden confirmada: {}", message, e);
@@ -62,13 +62,13 @@ public class OrderEventConsumer {
      * Representa la estructura del evento de integración.
      */
     public static class OrderConfirmedIntegrationEvent {
-        private String orderId;
+        private String orderNumber;
         private String customerAddress;
         private java.util.List<OrderItem> items;
         
         // Getters y setters
-        public String getOrderId() { return orderId; }
-        public void setOrderId(String orderId) { this.orderId = orderId; }
+        public String getOrderNumber() { return orderNumber; }
+        public void setOrderNumber(String orderNumber) { this.orderNumber = orderNumber; }
         
         public String getCustomerAddress() { return customerAddress; }
         public void setCustomerAddress(String customerAddress) { this.customerAddress = customerAddress; }
