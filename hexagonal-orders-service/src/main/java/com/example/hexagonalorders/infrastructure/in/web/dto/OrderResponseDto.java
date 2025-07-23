@@ -2,6 +2,8 @@ package com.example.hexagonalorders.infrastructure.in.web.dto;
 
 import com.example.hexagonalorders.domain.model.Order;
 import com.example.hexagonalorders.domain.model.OrderItem;
+import com.example.hexagonalorders.infrastructure.in.web.dto.AddressDto;
+import com.example.hexagonalorders.domain.model.valueobject.Address;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -32,6 +34,8 @@ public class OrderResponseDto {
     @Schema(description = "Order status.", example = "CREATED")
     private String status;
 
+    private AddressDto address;
+
     public OrderResponseDto() {}
 
     public OrderResponseDto(Order order, Long id) {
@@ -43,6 +47,10 @@ public class OrderResponseDto {
         this.items = order.getItems().stream()
                 .map(OrderItemResponseDto::new)
                 .collect(Collectors.toList());
+        Address addr = order.getAddress();
+        if (addr != null) {
+            this.address = new AddressDto(addr.street(), addr.city(), addr.postalCode(), addr.country());
+        }
     }
 
     // Getters y setters
@@ -63,4 +71,7 @@ public class OrderResponseDto {
     
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public AddressDto getAddress() { return address; }
+    public void setAddress(AddressDto address) { this.address = address; }
 } 

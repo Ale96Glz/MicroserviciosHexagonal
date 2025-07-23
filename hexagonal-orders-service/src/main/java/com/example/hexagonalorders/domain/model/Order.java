@@ -4,6 +4,7 @@ import com.example.hexagonalorders.domain.event.DomainEvent;
 import com.example.hexagonalorders.domain.event.OrderCreatedEvent;
 import com.example.hexagonalorders.domain.event.OrderItemAddedEvent;
 import com.example.hexagonalorders.domain.model.valueobject.OrderNumber;
+import com.example.hexagonalorders.domain.model.valueobject.Address;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,22 +27,26 @@ public class Order {
     private Long id;
     private final OrderNumber orderNumber;
     private final String customerId;
+    private final Address address;
     private final LocalDateTime orderDate;
     private final List<OrderItem> items;
     private OrderStatus status;
     private final List<DomainEvent> domainEvents = new ArrayList<>();
 
-    public Order(Long id, OrderNumber orderNumber, String customerId, LocalDateTime orderDate, List<OrderItem> items, OrderStatus status) {
-        this(orderNumber, customerId, orderDate, items, status);
+    public Order(Long id, OrderNumber orderNumber, String customerId, Address address, LocalDateTime orderDate, List<OrderItem> items, OrderStatus status) {
+        this(orderNumber, customerId, address, orderDate, items, status);
         this.id = id;
     }
 
-    public Order(OrderNumber orderNumber, String customerId, LocalDateTime orderDate, List<OrderItem> items, OrderStatus status) {
+    public Order(OrderNumber orderNumber, String customerId, Address address, LocalDateTime orderDate, List<OrderItem> items, OrderStatus status) {
         if (orderNumber == null) {
             throw new IllegalArgumentException("Order number cannot be null");
         }
         if (customerId == null || customerId.trim().isEmpty()) {
             throw new IllegalArgumentException("Customer ID cannot be null or empty");
+        }
+        if (address == null) {
+            throw new IllegalArgumentException("Address cannot be null");
         }
         if (orderDate == null) {
             throw new IllegalArgumentException("Order date cannot be null");
@@ -54,6 +59,7 @@ public class Order {
         }
         this.orderNumber = orderNumber;
         this.customerId = customerId;
+        this.address = address;
         this.orderDate = orderDate;
         this.items = items;
         this.status = status;
@@ -74,6 +80,10 @@ public class Order {
 
     public String getCustomerId() {
         return customerId;
+    }
+
+    public Address getAddress() {
+        return address;
     }
 
     public LocalDateTime getOrderDate() {

@@ -16,10 +16,19 @@ public class OrderConfirmedIntegrationEvent {
    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
    private final LocalDateTime confirmedAt;
 
-   public OrderConfirmedIntegrationEvent(OrderNumber orderNumber) {
+   private final String street;
+   private final String city;
+   private final String postalCode;
+   private final String country;
+
+   public OrderConfirmedIntegrationEvent(OrderNumber orderNumber, String street, String city, String postalCode, String country) {
        this.orderNumber = orderNumber.value();
        this.eventType = "OrderConfirmed";
        this.confirmedAt = LocalDateTime.now();
+       this.street = street;
+       this.city = city;
+       this.postalCode = postalCode;
+       this.country = country;
    }
 
    public String getOrderNumber() {
@@ -33,4 +42,9 @@ public class OrderConfirmedIntegrationEvent {
    public LocalDateTime getConfirmedAt() {
        return confirmedAt;
    }
+
+   public String getStreet() { return street; }
+   public String getCity() { return city; }
+   public String getPostalCode() { return postalCode; }
+   public String getCountry() { return country; }
 } 

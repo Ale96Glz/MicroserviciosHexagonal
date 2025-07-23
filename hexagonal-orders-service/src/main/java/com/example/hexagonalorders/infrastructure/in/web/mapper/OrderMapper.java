@@ -6,9 +6,11 @@ import com.example.hexagonalorders.domain.model.valueobject.OrderNumber;
 import com.example.hexagonalorders.domain.model.valueobject.ProductNumber;
 import com.example.hexagonalorders.domain.model.valueobject.Quantity;
 import com.example.hexagonalorders.domain.model.OrderStatus;
+import com.example.hexagonalorders.domain.model.valueobject.Address;
 import com.example.hexagonalorders.infrastructure.in.web.dto.OrderDto;
 import com.example.hexagonalorders.infrastructure.in.web.dto.OrderItemDto;
 import com.example.hexagonalorders.infrastructure.in.web.dto.OrderResponseDto;
+import com.example.hexagonalorders.infrastructure.in.web.dto.AddressDto;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -50,6 +52,7 @@ public class OrderMapper {
         return new Order(
             new OrderNumber(dto.getOrderNumber()),
             dto.getCustomerId(),
+            toDomainAddress(dto.getAddress()),
             dto.getOrderDate(),
             toDomainItems(dto.getItems()),
             status
@@ -73,6 +76,7 @@ public class OrderMapper {
         
         return new OrderCreationData(
             dto.getCustomerId(),
+            toDomainAddress(dto.getAddress()),
             dto.getOrderDate(),
             toDomainItems(dto.getItems()),
             status
@@ -84,18 +88,21 @@ public class OrderMapper {
      */
     public static class OrderCreationData {
         private final String customerId;
+        private final Address address;
         private final LocalDateTime orderDate;
         private final List<OrderItem> items;
         private final OrderStatus status;
         
-        public OrderCreationData(String customerId, LocalDateTime orderDate, List<OrderItem> items, OrderStatus status) {
+        public OrderCreationData(String customerId, Address address, LocalDateTime orderDate, List<OrderItem> items, OrderStatus status) {
             this.customerId = customerId;
+            this.address = address;
             this.orderDate = orderDate;
             this.items = items;
             this.status = status;
         }
         
         public String getCustomerId() { return customerId; }
+        public Address getAddress() { return address; }
         public LocalDateTime getOrderDate() { return orderDate; }
         public List<OrderItem> getItems() { return items; }
         public OrderStatus getStatus() { return status; }
@@ -119,5 +126,10 @@ public class OrderMapper {
             new Quantity(dto.getQuantity()),
             dto.getUnitPrice()
         );
+    }
+
+    private Address toDomainAddress(AddressDto dto) {
+        if (dto == null) return null;
+        return new Address(dto.getStreet(), dto.getCity(), dto.getPostalCode(), dto.getCountry());
     }
 } 

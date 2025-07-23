@@ -5,6 +5,7 @@ import com.example.hexagonalorders.domain.model.OrderItem;
 import com.example.hexagonalorders.domain.model.valueobject.OrderNumber;
 import com.example.hexagonalorders.domain.model.valueobject.ProductNumber;
 import com.example.hexagonalorders.domain.model.valueobject.Quantity;
+import com.example.hexagonalorders.domain.model.valueobject.Address;
 import com.example.hexagonalorders.infrastructure.out.persistence.entity.OrderJpaEntity;
 import com.example.hexagonalorders.infrastructure.out.persistence.entity.OrderItemJpaEntity;
 import org.springframework.stereotype.Component;
@@ -24,7 +25,14 @@ public class OrderJpaMapper {
         jpaEntity.setCustomerId(order.getCustomerId());
         jpaEntity.setOrderDate(order.getOrderDate());
         jpaEntity.setStatus(toJpaOrderStatus(order.getStatus()));
-        
+        // Dirección
+        Address address = order.getAddress();
+        if (address != null) {
+            jpaEntity.setStreet(address.street());
+            jpaEntity.setCity(address.city());
+            jpaEntity.setPostalCode(address.postalCode());
+            jpaEntity.setCountry(address.country());
+        }
         List<OrderItemJpaEntity> items = order.getItems().stream()
                 .map(item -> toJpaEntity(item, jpaEntity))
                 .collect(Collectors.toList());
@@ -46,11 +54,17 @@ public class OrderJpaMapper {
         List<OrderItem> items = jpaEntity.getItems().stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
-        
+        Address address = new Address(
+            jpaEntity.getStreet(),
+            jpaEntity.getCity(),
+            jpaEntity.getPostalCode(),
+            jpaEntity.getCountry()
+        );
         return new Order(
             jpaEntity.getId(),
             new OrderNumber(jpaEntity.getOrderNumber()),
             jpaEntity.getCustomerId(),
+            address,
             jpaEntity.getOrderDate(),
             items,
             toDomainOrderStatus(jpaEntity.getStatus())

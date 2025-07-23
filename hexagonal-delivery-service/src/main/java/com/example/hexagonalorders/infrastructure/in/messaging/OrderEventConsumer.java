@@ -44,7 +44,10 @@ public class OrderEventConsumer {
             // Crear entrega para la orden confirmada
             deliveryService.createDeliveryFromOrder(
                 event.getOrderNumber(),
-                event.getCustomerAddress(),
+                event.getStreet(),
+                event.getCity(),
+                event.getPostalCode(),
+                event.getCountry(),
                 event.getItems()
             );
             
@@ -62,17 +65,23 @@ public class OrderEventConsumer {
      * Representa la estructura del evento de integración.
      */
     public static class OrderConfirmedIntegrationEvent {
-        private String orderNumber;
-        private String customerAddress;
+        private String street;
+        private String city;
+        private String postalCode;
+        private String country;
         private java.util.List<OrderItem> items;
-        
+        private String orderNumber;
         // Getters y setters
         public String getOrderNumber() { return orderNumber; }
         public void setOrderNumber(String orderNumber) { this.orderNumber = orderNumber; }
-        
-        public String getCustomerAddress() { return customerAddress; }
-        public void setCustomerAddress(String customerAddress) { this.customerAddress = customerAddress; }
-        
+        public String getStreet() { return street; }
+        public void setStreet(String street) { this.street = street; }
+        public String getCity() { return city; }
+        public void setCity(String city) { this.city = city; }
+        public String getPostalCode() { return postalCode; }
+        public void setPostalCode(String postalCode) { this.postalCode = postalCode; }
+        public String getCountry() { return country; }
+        public void setCountry(String country) { this.country = country; }
         public java.util.List<OrderItem> getItems() { return items; }
         public void setItems(java.util.List<OrderItem> items) { this.items = items; }
     }

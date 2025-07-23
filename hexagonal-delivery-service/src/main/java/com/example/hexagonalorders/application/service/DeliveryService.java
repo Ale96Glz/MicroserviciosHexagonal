@@ -142,22 +142,17 @@ public class DeliveryService implements DeliveryUseCase {
      * @param customerAddress la dirección de entrega del cliente
      * @param items los ítems de la orden (para uso futuro en planificación de entrega)
      */
-    public Delivery createDeliveryFromOrder(String orderId, String customerAddress, 
+    public Delivery createDeliveryFromOrder(String orderId, String street, String city, String postalCode, String country, 
                                           List<com.example.hexagonalorders.infrastructure.in.messaging.OrderEventConsumer.OrderItem> items) {
         DeliveryId deliveryId = new DeliveryId(UUID.randomUUID().toString());
-        
-        // Analizar dirección del cliente (asumiendo que es una cadena simple por ahora)
-        // En un escenario real, podrías querer analizar esto en componentes de dirección estructurados
         DeliveryAddress address = new DeliveryAddress(
-            customerAddress, // calle
-            "Ciudad Desconocida",  // ciudad - podrías extraer esto de customerAddress
-            "Estado Desconocido", // estado
-            "00000",         // código postal
-            "País Desconocido" // país
+            street,
+            city,
+            "Estado Desconocido",
+            postalCode,
+            country
         );
-        
-        DeliveryDate scheduledDate = new DeliveryDate(LocalDateTime.now().plusDays(1)); // Por defecto: día siguiente
-        
+        DeliveryDate scheduledDate = new DeliveryDate(LocalDateTime.now().plusDays(1));
         Delivery delivery = new Delivery(
             deliveryId,
             orderId,
@@ -166,14 +161,10 @@ public class DeliveryService implements DeliveryUseCase {
             DeliveryStatus.CREATED,
             "Entrega creada desde orden confirmada: " + orderId
         );
-        
         Delivery savedDelivery = deliveryRepository.save(delivery);
-        
-        // Registrar eventos de dominio para depuración
         savedDelivery.getDomainEvents().forEach(event -> {
             System.out.println("Evento de dominio publicado: " + event.getClass().getSimpleName());
         });
-        
         return savedDelivery;
     }
 } 

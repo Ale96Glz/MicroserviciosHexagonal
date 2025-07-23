@@ -4,7 +4,10 @@ import com.example.hexagonalorders.application.event.OrderConfirmedIntegrationEv
 import com.example.hexagonalorders.domain.event.DomainEvent;
 import com.example.hexagonalorders.domain.event.OrderConfirmedEvent;
 import com.example.hexagonalorders.domain.model.OutboxMessage;
+import com.example.hexagonalorders.domain.model.Order;
+import com.example.hexagonalorders.domain.model.valueobject.Address;
 import com.example.hexagonalorders.domain.port.out.OutboxRepository;
+import com.example.hexagonalorders.domain.port.out.OrderRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,10 +28,12 @@ public class DomainEventHandler {
    
    private final OutboxRepository outboxRepository;
    private final ObjectMapper objectMapper;
+   private final OrderRepository orderRepository;
 
-   public DomainEventHandler(OutboxRepository outboxRepository, ObjectMapper objectMapper) {
+   public DomainEventHandler(OutboxRepository outboxRepository, ObjectMapper objectMapper, OrderRepository orderRepository) {
        this.outboxRepository = outboxRepository;
        this.objectMapper = objectMapper;
+       this.orderRepository = orderRepository;
    }
   
    /**
@@ -42,9 +47,17 @@ public class DomainEventHandler {
        log.debug("DOMAIN EVENT HANDLER: Handling OrderConfirmedEvent for order: {}", event.getOrderNumber());
       
        try {
+           // Obtener la orden para extraer la dirección
+           Order order = orderRepository.findByOrderNumber(event.getOrderNumber())
+               .orElseThrow(() -> new IllegalArgumentException("Order not found for event: " + event.getOrderNumber().value()));
+           Address address = order.getAddress();
            // Create integration event
            OrderConfirmedIntegrationEvent integrationEvent =
-               new OrderConfirmedIntegrationEvent(event.getOrderNumber());
+               new OrderConfirmedIntegrationEvent(event.getOrderNumber(),
+                   address != null ? address.street() : null,
+                   address != null ? address.city() : null,
+                   address != null ? address.postalCode() : null,
+                   address != null ? address.country() : null);
           
            // Persist to outbox for reliable delivery
            persistToOutbox(integrationEvent, "Order", event.getOrderNumber().value());

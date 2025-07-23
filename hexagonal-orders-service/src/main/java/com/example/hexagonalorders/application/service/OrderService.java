@@ -59,6 +59,7 @@ public class OrderService implements OrderUseCase {
         Order order = new Order(
             orderNumber,
             orderData.getCustomerId(),
+            orderData.getAddress(),
             orderData.getOrderDate(),
             orderData.getItems(),
             orderData.getStatus()
@@ -90,6 +91,7 @@ public class OrderService implements OrderUseCase {
         Order order = new Order(
             orderNumber,
             orderData.getCustomerId(),
+            orderData.getAddress(),
             orderData.getOrderDate(),
             orderData.getItems(),
             orderData.getStatus()

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
+import com.example.hexagonalorders.infrastructure.in.web.dto.AddressDto;
 
 /**
  * Data Transfer Object for Order data.
@@ -30,11 +31,14 @@ public class OrderDto {
     @Schema(description = "Order status.", example = "CREATED", required = true)
     private String status;
 
+    private AddressDto address;
+
     public OrderDto() {}
 
-    public OrderDto(String orderNumber, String customerId, LocalDateTime orderDate, List<OrderItemDto> items, String status) {
+    public OrderDto(String orderNumber, String customerId, AddressDto address, LocalDateTime orderDate, List<OrderItemDto> items, String status) {
         this.orderNumber = orderNumber;
         this.customerId = customerId;
+        this.address = address;
         this.orderDate = orderDate;
         this.items = items;
         this.status = status;
@@ -46,6 +50,7 @@ public class OrderDto {
     public LocalDateTime getOrderDate() { return orderDate; }
     public List<OrderItemDto> getItems() { return items; }
     public String getStatus() { return status; }
+    public AddressDto getAddress() { return address; }
 
     // Setters manuales para evitar problemas con Lombok
     public void setId(Long id) { this.id = id; }
@@ -54,4 +59,5 @@ public class OrderDto {
     public void setOrderDate(LocalDateTime orderDate) { this.orderDate = orderDate; }
     public void setItems(List<OrderItemDto> items) { this.items = items; }
     public void setStatus(String status) { this.status = status; }
+    public void setAddress(AddressDto address) { this.address = address; }
 } 
