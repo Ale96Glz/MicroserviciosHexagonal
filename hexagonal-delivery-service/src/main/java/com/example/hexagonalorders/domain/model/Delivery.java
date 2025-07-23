@@ -6,6 +6,7 @@ import com.example.hexagonalorders.domain.event.DeliveryStatusChangedEvent;
 import com.example.hexagonalorders.domain.model.valueobject.DeliveryId;
 import com.example.hexagonalorders.domain.model.valueobject.DeliveryAddress;
 import com.example.hexagonalorders.domain.model.valueobject.DeliveryDate;
+import com.example.hexagonalorders.domain.model.valueobject.DeliveryItem;
 
 
 import java.time.LocalDateTime;
@@ -33,9 +34,10 @@ public class Delivery {
     private DeliveryStatus status;
     private String deliveryNotes;
     private final List<DomainEvent> domainEvents = new ArrayList<>();
+    private final List<DeliveryItem> items;
 
     public Delivery(DeliveryId deliveryId, String orderNumber, DeliveryAddress deliveryAddress, 
-                   DeliveryDate scheduledDate, DeliveryStatus status, String deliveryNotes) {
+                   DeliveryDate scheduledDate, DeliveryStatus status, String deliveryNotes, List<DeliveryItem> items) {
         if (deliveryId == null) {
             throw new IllegalArgumentException("Delivery ID cannot be null");
         }
@@ -51,15 +53,17 @@ public class Delivery {
         if (status == null) {
             throw new IllegalArgumentException("Delivery status cannot be null");
         }
-        
+        if (items == null) {
+            throw new IllegalArgumentException("Delivery items cannot be null");
+        }
         this.deliveryId = deliveryId;
         this.orderNumber = orderNumber;
         this.deliveryAddress = deliveryAddress;
         this.scheduledDate = scheduledDate;
         this.status = status;
         this.deliveryNotes = deliveryNotes;
-        
-        // Add domain event for delivery creation
+        this.items = new ArrayList<>(items);
+        // Add evento de dominio para la creación de la entrega
         domainEvents.add(new DeliveryCreatedEvent(deliveryId.value(), orderNumber));
     }
 
@@ -93,9 +97,13 @@ public class Delivery {
     public void clearDomainEvents() {
         domainEvents.clear();
     }
+
+    public List<DeliveryItem> getItems() {
+        return Collections.unmodifiableList(items);
+    }
     /**
-     * Schedules the delivery for a specific date and time.
-     * This represents the business action of scheduling a delivery.
+     * Schedule para la entrega
+     * Representa la acción de programar una entrega.
      */
     public void scheduleDelivery(DeliveryDate newScheduledDate) {
         if (newScheduledDate == null) {
@@ -113,8 +121,8 @@ public class Delivery {
     }
 
     /**
-     * Confirms the delivery is ready for pickup.
-     * This represents the business action of confirming delivery preparation.
+     * Confirma la entrega para el pick up.
+     * Representa la acción de confirmar la preparación de la entrega.
      */
     public void confirmDelivery() {
         if (status == DeliveryStatus.CANCELLED) {
@@ -126,8 +134,8 @@ public class Delivery {
     }
 
     /**
-     * Marks the delivery as in transit.
-     * This represents the business action of starting the delivery process.
+     * Marca la entrega como en tránsito.
+     * Representa la acción de iniciar el proceso de entrega.
      */
     public void startDelivery() {
         if (status != DeliveryStatus.CONFIRMED) {
@@ -139,8 +147,8 @@ public class Delivery {
     }
 
     /**
-     * Marks the delivery as completed.
-     * This represents the business action of completing the delivery.
+         * Marks the delivery as completed.
+         * This represents the business action of completing the delivery.
      */
     public void completeDelivery() {
         if (status != DeliveryStatus.IN_TRANSIT) {
@@ -152,8 +160,8 @@ public class Delivery {
     }
 
     /**
-     * Cancels the delivery.
-     * This represents the business action of cancelling a delivery.
+         * Cancels the delivery.
+         * This represents the business action of cancelling a delivery.
      */
     public void cancelDelivery() {
         if (status == DeliveryStatus.COMPLETED) {
@@ -165,22 +173,22 @@ public class Delivery {
     }
 
     /**
-     * Updates delivery notes.
-     * This represents the business action of adding delivery information.
+     * Actualiza las notas de la entrega.
+     * Representa la acción de actualizar las notas de la entrega.
      */
     public void updateDeliveryNotes(String notes) {
         this.deliveryNotes = notes;
     }
 
     /**
-     * Checks if the delivery can be cancelled.
+     * Revisa si la entrega puede ser cancelada.
      */
     public boolean canBeCancelled() {
         return status != DeliveryStatus.COMPLETED && status != DeliveryStatus.CANCELLED;
     }
 
     /**
-     * Checks if the delivery is active (not cancelled or completed).
+     * Revisa si la entrega está activa (no cancelada o completada).
      */
     public boolean isActive() {
         return status != DeliveryStatus.CANCELLED && status != DeliveryStatus.COMPLETED;

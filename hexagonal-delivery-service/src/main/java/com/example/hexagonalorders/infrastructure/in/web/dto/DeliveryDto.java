@@ -2,6 +2,7 @@ package com.example.hexagonalorders.infrastructure.in.web.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * DTO para los datos de la entrega.
@@ -33,16 +34,20 @@ public class DeliveryDto {
             example = "Entregar en la puerta principal")
     private String deliveryNotes;
 
+    @Schema(description = "Lista de ítems de la entrega.")
+    private List<DeliveryItemDto> items;
+
     public DeliveryDto() {}
 
     public DeliveryDto(String deliveryId, String orderNumber, DeliveryAddressDto deliveryAddress, 
-                      LocalDateTime scheduledDate, String status, String deliveryNotes) {
+                      LocalDateTime scheduledDate, String status, String deliveryNotes, List<DeliveryItemDto> items) {
         this.deliveryId = deliveryId;
         this.orderNumber = orderNumber;
         this.deliveryAddress = deliveryAddress;
         this.scheduledDate = scheduledDate;
         this.status = status;
         this.deliveryNotes = deliveryNotes;
+        this.items = items;
     }
 
     // Getters manuales para evitar problemas con Lombok
@@ -52,6 +57,7 @@ public class DeliveryDto {
     public LocalDateTime getScheduledDate() { return scheduledDate; }
     public String getStatus() { return status; }
     public String getDeliveryNotes() { return deliveryNotes; }
+    public List<DeliveryItemDto> getItems() { return items; }
 
     // Setters manuales para evitar problemas con Lombok
     public void setDeliveryId(String deliveryId) { this.deliveryId = deliveryId; }
@@ -60,4 +66,5 @@ public class DeliveryDto {
     public void setScheduledDate(LocalDateTime scheduledDate) { this.scheduledDate = scheduledDate; }
     public void setStatus(String status) { this.status = status; }
     public void setDeliveryNotes(String deliveryNotes) { this.deliveryNotes = deliveryNotes; }
+    public void setItems(List<DeliveryItemDto> items) { this.items = items; }
 } 

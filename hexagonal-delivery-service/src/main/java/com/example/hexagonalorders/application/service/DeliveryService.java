@@ -5,6 +5,9 @@ import com.example.hexagonalorders.domain.model.DeliveryStatus;
 import com.example.hexagonalorders.domain.model.valueobject.DeliveryId;
 import com.example.hexagonalorders.domain.model.valueobject.DeliveryDate;
 import com.example.hexagonalorders.domain.model.valueobject.DeliveryAddress;
+import com.example.hexagonalorders.domain.model.valueobject.DeliveryItem;
+import com.example.hexagonalorders.domain.model.valueobject.ProductNumber;
+import com.example.hexagonalorders.domain.model.valueobject.Quantity;
 import com.example.hexagonalorders.domain.port.in.DeliveryUseCase;
 import com.example.hexagonalorders.domain.port.out.DeliveryRepository;
 import org.springframework.stereotype.Service;
@@ -41,7 +44,8 @@ public class DeliveryService implements DeliveryUseCase {
             data.getDeliveryAddress(),
             data.getScheduledDate(),
             data.getStatus(),
-            data.getDeliveryNotes()
+            data.getDeliveryNotes(),
+            new java.util.ArrayList<>()
         );
         Delivery savedDelivery = deliveryRepository.save(delivery);
         savedDelivery.getDomainEvents().forEach(event -> {
@@ -153,13 +157,24 @@ public class DeliveryService implements DeliveryUseCase {
             country
         );
         DeliveryDate scheduledDate = new DeliveryDate(LocalDateTime.now().plusDays(1));
+        // Mapear los items del evento a DeliveryItem
+        List<DeliveryItem> deliveryItems = new java.util.ArrayList<>();
+        if (items != null) {
+            for (com.example.hexagonalorders.infrastructure.in.messaging.OrderEventConsumer.OrderItem item : items) {
+                deliveryItems.add(new DeliveryItem(
+                    new ProductNumber(item.getProductNumber()),
+                    new Quantity(item.getQuantity())
+                ));
+            }
+        }
         Delivery delivery = new Delivery(
             deliveryId,
             orderId,
             address,
             scheduledDate,
             DeliveryStatus.CREATED,
-            "Entrega creada desde orden confirmada: " + orderId
+            "Entrega creada desde orden confirmada: " + orderId,
+            deliveryItems
         );
         Delivery savedDelivery = deliveryRepository.save(delivery);
         savedDelivery.getDomainEvents().forEach(event -> {

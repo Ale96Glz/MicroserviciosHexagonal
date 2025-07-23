@@ -6,9 +6,14 @@ import com.example.hexagonalorders.domain.model.valueobject.DeliveryId;
 import com.example.hexagonalorders.domain.model.valueobject.DeliveryAddress;
 import com.example.hexagonalorders.domain.model.valueobject.DeliveryDate;
 import com.example.hexagonalorders.infrastructure.out.persistence.entity.DeliveryEntity;
+import com.example.hexagonalorders.infrastructure.out.persistence.entity.DeliveryItemEntity;
+import com.example.hexagonalorders.domain.model.valueobject.DeliveryItem;
+import com.example.hexagonalorders.domain.model.valueobject.ProductNumber;
+import com.example.hexagonalorders.domain.model.valueobject.Quantity;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 @Component
@@ -20,7 +25,6 @@ public class DeliveryPersistenceMapper {
         }
         
         // Crear la dirección de entrega usando los campos de la entidad
-        // Nota: La entidad no tiene state, así que usamos un valor por defecto
         DeliveryAddress deliveryAddress = new DeliveryAddress(
             entity.getStreet() != null ? entity.getStreet() : "Dirección por defecto",
             entity.getCity() != null ? entity.getCity() : "Ciudad",
@@ -32,13 +36,20 @@ public class DeliveryPersistenceMapper {
         // Crear la fecha de entrega
         DeliveryDate scheduledDate = new DeliveryDate(entity.getScheduledDate());
         
+        List<DeliveryItem> items = entity.getItems() != null ? entity.getItems().stream()
+            .map(itemEntity -> new DeliveryItem(
+                new ProductNumber(itemEntity.getProductNumber()),
+                new Quantity(itemEntity.getQuantity())
+            )).collect(Collectors.toList()) : new ArrayList<>();
+        
         return new Delivery(
             new DeliveryId(entity.getDeliveryId()),
             entity.getOrderNumber(),
             deliveryAddress,
             scheduledDate,
             entity.getStatus(),
-            "Notas de entrega por defecto" // Valor por defecto para deliveryNotes
+            "Notas de entrega por defecto",
+            items
         );
     }
     
@@ -50,8 +61,8 @@ public class DeliveryPersistenceMapper {
         DeliveryEntity entity = new DeliveryEntity(
             delivery.getDeliveryId().value(),
             delivery.getOrderNumber(),
-            null, // routeId - no disponible en el dominio
-            null, // deliveryPersonId - no disponible en el dominio
+            null, // routeId - no disponible en el dominio de momento
+            null, // deliveryPersonId - no disponible en el dominio de momento
             delivery.getDeliveryAddress().getStreet(),
             delivery.getDeliveryAddress().getCity(),
             delivery.getDeliveryAddress().getPostalCode(),
@@ -59,6 +70,15 @@ public class DeliveryPersistenceMapper {
             delivery.getStatus(),
             delivery.getScheduledDate().value()
         );
+        
+        // Mapear los ítems de dominio a entidades
+        List<DeliveryItemEntity> itemEntities = delivery.getItems() != null ? delivery.getItems().stream()
+            .map(item -> new DeliveryItemEntity(
+                item.getProductNumber().value(),
+                item.getQuantity().value(),
+                entity
+            )).collect(Collectors.toList()) : new ArrayList<>();
+        entity.setItems(itemEntities);
         
         return entity;
     }

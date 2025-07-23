@@ -75,7 +75,8 @@ public class OrderJpaMapper {
         return new OrderItem(
             new ProductNumber(jpaEntity.getProductNumber()),
             new Quantity(jpaEntity.getQuantity()),
-            jpaEntity.getUnitPrice()
+            jpaEntity.getUnitPrice(),
+            jpaEntity.getId()
         );
     }
 

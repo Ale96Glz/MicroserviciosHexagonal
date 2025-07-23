@@ -23,6 +23,7 @@ public class OrderItemResponseDto {
     public OrderItemResponseDto() {}
 
     public OrderItemResponseDto(OrderItem item) {
+        this.id = item.getId();
         this.productNumber = item.getProductNumber().value();
         this.quantity = item.getQuantity().value();
         this.unitPrice = item.getUnitPrice();

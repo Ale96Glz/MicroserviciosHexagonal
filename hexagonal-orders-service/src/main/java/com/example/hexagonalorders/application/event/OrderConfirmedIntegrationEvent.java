@@ -4,6 +4,7 @@ import com.example.hexagonalorders.domain.model.valueobject.OrderNumber;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
 * Integration event for order confirmation.
@@ -20,8 +21,9 @@ public class OrderConfirmedIntegrationEvent {
    private final String city;
    private final String postalCode;
    private final String country;
+   private final List<ItemDto> items;
 
-   public OrderConfirmedIntegrationEvent(OrderNumber orderNumber, String street, String city, String postalCode, String country) {
+   public OrderConfirmedIntegrationEvent(OrderNumber orderNumber, String street, String city, String postalCode, String country, List<ItemDto> items) {
        this.orderNumber = orderNumber.value();
        this.eventType = "OrderConfirmed";
        this.confirmedAt = LocalDateTime.now();
@@ -29,6 +31,7 @@ public class OrderConfirmedIntegrationEvent {
        this.city = city;
        this.postalCode = postalCode;
        this.country = country;
+       this.items = items;
    }
 
    public String getOrderNumber() {
@@ -47,4 +50,19 @@ public class OrderConfirmedIntegrationEvent {
    public String getCity() { return city; }
    public String getPostalCode() { return postalCode; }
    public String getCountry() { return country; }
+   public List<ItemDto> getItems() { return items; }
+
+   public static class ItemDto {
+       private final String productNumber;
+       private final int quantity;
+       private final double unitPrice;
+       public ItemDto(String productNumber, int quantity, double unitPrice) {
+           this.productNumber = productNumber;
+           this.quantity = quantity;
+           this.unitPrice = unitPrice;
+       }
+       public String getProductNumber() { return productNumber; }
+       public int getQuantity() { return quantity; }
+       public double getUnitPrice() { return unitPrice; }
+   }
 } 

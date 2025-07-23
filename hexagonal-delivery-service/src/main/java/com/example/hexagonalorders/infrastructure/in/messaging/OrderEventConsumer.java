@@ -90,12 +90,12 @@ public class OrderEventConsumer {
      * DTO de ítem de orden para eventos de integración.
      */
     public static class OrderItem {
-        private String productId;
+        private String productNumber;
         private int quantity;
         
         // Getters y setters
-        public String getProductId() { return productId; }
-        public void setProductId(String productId) { this.productId = productId; }
+        public String getProductNumber() { return productNumber; }
+        public void setProductNumber(String productNumber) { this.productNumber = productNumber; }
         
         public int getQuantity() { return quantity; }
         public void setQuantity(int quantity) { this.quantity = quantity; }

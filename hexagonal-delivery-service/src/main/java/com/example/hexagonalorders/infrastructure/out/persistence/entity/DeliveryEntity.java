@@ -3,6 +3,8 @@ package com.example.hexagonalorders.infrastructure.out.persistence.entity;
 import jakarta.persistence.*;
 import com.example.hexagonalorders.domain.model.DeliveryStatus;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "deliveries")
@@ -48,6 +50,9 @@ public class DeliveryEntity {
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<DeliveryItemEntity> items = new ArrayList<>();
 
     public DeliveryEntity() {}
     
@@ -171,4 +176,7 @@ public class DeliveryEntity {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    public List<DeliveryItemEntity> getItems() { return items; }
+    public void setItems(List<DeliveryItemEntity> items) { this.items = items; }
 } 

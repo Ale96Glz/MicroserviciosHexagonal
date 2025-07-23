@@ -1,5 +1,6 @@
 package com.example.hexagonalorders.application.service;
 
+import com.example.hexagonalorders.application.event.OrderConfirmedIntegrationEvent;
 import com.example.hexagonalorders.domain.event.DomainEvent;
 import com.example.hexagonalorders.domain.model.Order;
 import com.example.hexagonalorders.domain.model.OutboxMessage;
@@ -75,7 +76,10 @@ public class OrderService implements OrderUseCase {
         // Procesar eventos de dominio: publicar internamente y persistir en outbox
         for (DomainEvent event : savedOrder.getDomainEvents()) {
             eventPublisher.publishEvent(event);
-            persistToOutbox(event, "Order", orderNumber.value());
+            // Solo persistir en el outbox si es un evento de integración
+            if (event.getClass().getSimpleName().equals("OrderConfirmedIntegrationEvent")) {
+                persistToOutbox(event, "Order", orderNumber.value());
+            }
         }
 
         savedOrder.clearDomainEvents();
@@ -107,7 +111,10 @@ public class OrderService implements OrderUseCase {
         // Procesar eventos de dominio: publicar internamente y persistir en outbox
         for (DomainEvent event : savedOrder.getDomainEvents()) {
             eventPublisher.publishEvent(event);
-            persistToOutbox(event, "Order", orderNumber.value());
+            // Solo persistir en el outbox si es un evento de integración
+            if (event.getClass().getSimpleName().equals("OrderConfirmedIntegrationEvent")) {
+                persistToOutbox(event, "Order", orderNumber.value());
+            }
         }
 
         savedOrder.clearDomainEvents();
@@ -147,7 +154,10 @@ public class OrderService implements OrderUseCase {
         orderRepository.save(order);
         for (DomainEvent event : order.getDomainEvents()) {
             eventPublisher.publishEvent(event);
-            persistToOutbox(event, "Order", orderNumber.value());
+            // Solo persistir en el outbox si es un evento de integración
+            if (event.getClass().getSimpleName().equals("OrderConfirmedIntegrationEvent")) {
+                persistToOutbox(event, "Order", orderNumber.value());
+            }
         }
         order.clearDomainEvents();
     }

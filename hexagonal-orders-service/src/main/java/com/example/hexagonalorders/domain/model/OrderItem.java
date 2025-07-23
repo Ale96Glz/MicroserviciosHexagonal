@@ -3,15 +3,18 @@ package com.example.hexagonalorders.domain.model;
 import com.example.hexagonalorders.domain.model.valueobject.ProductNumber;
 import com.example.hexagonalorders.domain.model.valueobject.Quantity;
 import java.math.BigDecimal;
-import java.util.Objects;
-
 
 public class OrderItem {
     private final ProductNumber productNumber;
     private final Quantity quantity;
     private final BigDecimal unitPrice;
+    private final Long id;
 
     public OrderItem(ProductNumber productNumber, Quantity quantity, BigDecimal unitPrice) {
+        this(productNumber, quantity, unitPrice, null);
+    }
+
+    public OrderItem(ProductNumber productNumber, Quantity quantity, BigDecimal unitPrice, Long id) {
         if (productNumber == null) {
             throw new IllegalArgumentException("Product number cannot be null");
         }
@@ -24,6 +27,7 @@ public class OrderItem {
         this.productNumber = productNumber;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
+        this.id = id;
     }
 
     public ProductNumber getProductNumber() {
@@ -38,4 +42,7 @@ public class OrderItem {
         return unitPrice;
     }
 
+    public Long getId() {
+        return id;
+    }
 } 

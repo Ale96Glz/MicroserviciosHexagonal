@@ -15,6 +15,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
 * Event handler for domain events that need to be mapped to integration events.
@@ -51,13 +52,21 @@ public class DomainEventHandler {
            Order order = orderRepository.findByOrderNumber(event.getOrderNumber())
                .orElseThrow(() -> new IllegalArgumentException("Order not found for event: " + event.getOrderNumber().value()));
            Address address = order.getAddress();
+           // Crear lista de ítems para el evento
+           java.util.List<OrderConfirmedIntegrationEvent.ItemDto> items = order.getItems().stream()
+               .map(i -> new OrderConfirmedIntegrationEvent.ItemDto(
+                   i.getProductNumber().value(),
+                   i.getQuantity().value(),
+                   i.getUnitPrice().doubleValue()
+               )).collect(Collectors.toList());
            // Create integration event
            OrderConfirmedIntegrationEvent integrationEvent =
                new OrderConfirmedIntegrationEvent(event.getOrderNumber(),
                    address != null ? address.street() : null,
                    address != null ? address.city() : null,
                    address != null ? address.postalCode() : null,
-                   address != null ? address.country() : null);
+                   address != null ? address.country() : null,
+                   items);
           
            // Persist to outbox for reliable delivery
            persistToOutbox(integrationEvent, "Order", event.getOrderNumber().value());

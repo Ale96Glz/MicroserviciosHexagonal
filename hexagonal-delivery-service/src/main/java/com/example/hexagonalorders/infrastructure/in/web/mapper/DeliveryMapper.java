@@ -7,7 +7,12 @@ import com.example.hexagonalorders.domain.model.valueobject.DeliveryAddress;
 import com.example.hexagonalorders.domain.model.valueobject.DeliveryDate;
 import com.example.hexagonalorders.infrastructure.in.web.dto.DeliveryDto;
 import com.example.hexagonalorders.infrastructure.in.web.dto.DeliveryAddressDto;
+import com.example.hexagonalorders.infrastructure.in.web.dto.DeliveryItemDto;
+import com.example.hexagonalorders.domain.model.valueobject.DeliveryItem;
 import org.springframework.stereotype.Component;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+import java.util.List;
 
 /**
  * Clase Mapper responsable de convertir entre entidades de dominio y DTOs para Delivery.
@@ -27,7 +32,8 @@ public class DeliveryMapper {
             toAddressDto(delivery.getDeliveryAddress()),
             delivery.getScheduledDate().value(),
             delivery.getStatus().name(),
-            delivery.getDeliveryNotes()
+            delivery.getDeliveryNotes(),
+            toItemDtoList(delivery.getItems())
         );
     }
     
@@ -44,7 +50,8 @@ public class DeliveryMapper {
             toDomainAddress(dto.getDeliveryAddress()),
             new DeliveryDate(dto.getScheduledDate()),
             DeliveryStatus.valueOf(dto.getStatus()),
-            dto.getDeliveryNotes()
+            dto.getDeliveryNotes(),
+            toDomainItemList(dto.getItems())
         );
     }
     
@@ -72,6 +79,22 @@ public class DeliveryMapper {
             dto.getPostalCode(),
             dto.getCountry()
         );
+    }
+
+    private List<DeliveryItemDto> toItemDtoList(List<DeliveryItem> items) {
+        if (items == null) return new ArrayList<>();
+        return items.stream()
+            .map(item -> new DeliveryItemDto(item.getProductNumber().value(), item.getQuantity().value()))
+            .collect(Collectors.toList());
+    }
+    private List<DeliveryItem> toDomainItemList(List<DeliveryItemDto> items) {
+        if (items == null) return new ArrayList<>();
+        return items.stream()
+            .map(dto -> new DeliveryItem(
+                new com.example.hexagonalorders.domain.model.valueobject.ProductNumber(dto.getProductNumber()),
+                new com.example.hexagonalorders.domain.model.valueobject.Quantity(dto.getQuantity())
+            ))
+            .collect(Collectors.toList());
     }
 
     public static class DeliveryCreationData {
