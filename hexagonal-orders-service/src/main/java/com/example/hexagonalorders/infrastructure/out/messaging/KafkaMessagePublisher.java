@@ -18,13 +18,17 @@ import java.util.concurrent.CompletableFuture;
 */
 @Primary
 @Component
-@RequiredArgsConstructor
 public class KafkaMessagePublisher implements MessagePublisher {
 
-    private static final Logger log = LoggerFactory.getLogger(KafkaMessagePublisher.class);
+   private static final Logger log = LoggerFactory.getLogger(KafkaMessagePublisher.class);
 
    private final KafkaTemplate<String, String> kafkaTemplate;
    private final TopicNameMapper topicNameMapper;
+
+    public KafkaMessagePublisher(KafkaTemplate<String, String> kafkaTemplate, TopicNameMapper topicNameMapper) {
+        this.kafkaTemplate = kafkaTemplate;
+        this.topicNameMapper = topicNameMapper;
+    }
 
    @Override
    public void publish(String topic, String payload) {
