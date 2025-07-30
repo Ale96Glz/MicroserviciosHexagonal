@@ -10,10 +10,10 @@ env:
   JAVA_VERSION: '17'
   MAVEN_VERSION: '3.9.6'
   DOCKER_REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ${{ github.repository | lowercase }}
 
 jobs:
-  # Job de build de Docker images
+  # Tarea de build de Docker images
   build-docker-images:
     name: Build Docker Images
     runs-on: ubuntu-latest
@@ -61,7 +61,7 @@ jobs:
           tags: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}/delivery-service:${{ steps.meta.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  # Job de notificaciones
+  # Tarea de notificaciones
   notify:
     name: Notificaciones
     runs-on: ubuntu-latest
