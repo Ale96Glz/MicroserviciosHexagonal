@@ -3,9 +3,9 @@ services:
     image: redpandadata/redpanda:latest
     container_name: redpanda
     ports:
-      - "9092:9092"   # Kafka API
-      - "9644:9644"   # Admin API
-      - "8082:8082"   # REST API
+      - "9092:9092"
+      - "9644:9644"
+      - "8082:8082"
     command:
       - redpanda
       - start
@@ -21,23 +21,18 @@ services:
       - --advertise-pandaproxy-addr localhost:8082
       - --rpc-addr 0.0.0.0:33145
       - --advertise-rpc-addr redpanda:33145
-    healthcheck:
-      test: ["CMD-SHELL", "rpk cluster health --api-urls=localhost:9644"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+    networks:
+      - microservices-network
 
   redpanda-console:
     image: redpandadata/console:latest
     container_name: redpanda-console
     ports:
-      - "8081:8080"   # Redpanda Console Web UI
+      - "8081:8080"
     environment:
       - KAFKA_BROKERS=redpanda:29092
     depends_on:
-      redpanda:
-        condition: service_healthy
+      - redpanda
     networks:
       - microservices-network
 
@@ -49,14 +44,17 @@ services:
     ports:
       - "8084:8084"
     environment:
+      - SPRING_PROFILES_ACTIVE=docker
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=redpanda:29092
       - SERVER_PORT=8084
+      - KAFKA_TOPIC_PREFIX=hexagonal-orders
+      - KAFKA_TOPIC_ENVIRONMENT=dev
+      - KAFKA_ENABLED=true
     depends_on:
-      redpanda:
-        condition: service_healthy
+      - redpanda
+    restart: unless-stopped
     networks:
       - microservices-network
-    restart: unless-stopped
 
   delivery-service:
     build:
@@ -66,15 +64,21 @@ services:
     ports:
       - "8083:8083"
     environment:
+      - SPRING_PROFILES_ACTIVE=docker
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=redpanda:29092
       - SERVER_PORT=8083
+      - KAFKA_CONSUMER_GROUP_ID=delivery-service-group
+      - KAFKA_CONSUMER_AUTO_OFFSET_RESET=earliest
+      - KAFKA_TOPIC_ORDER_CONFIRMED=hexagonal-orders-dev-order-confirmed
+      - KAFKA_TOPIC_ORDER_CREATED=hexagonal-orders-dev-order-created
     depends_on:
-      redpanda:
-        condition: service_healthy
+      - redpanda
+      - orders-service
+    restart: unless-stopped
     networks:
       - microservices-network
-    restart: unless-stopped
 
 networks:
   microservices-network:
     driver: bridge
+    name: microservices-network 
