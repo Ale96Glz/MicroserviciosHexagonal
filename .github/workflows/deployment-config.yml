@@ -1,0 +1,118 @@
+# Configuración de Deployment para Microservicios Hexagonales
+
+# Configuración de entornos
+environments:
+  staging:
+    name: "Staging Environment"
+    url: "https://staging.hexagonal-microservices.com"
+    deployment_strategy: "rolling"
+    replicas: 2
+    resources:
+      cpu: "500m"
+      memory: "1Gi"
+    
+  production:
+    name: "Production Environment"
+    url: "https://hexagonal-microservices.com"
+    deployment_strategy: "blue-green"
+    replicas: 3
+    resources:
+      cpu: "1000m"
+      memory: "2Gi"
+
+# Configuración de servicios
+services:
+  orders-service:
+    port: 8084
+    health_check: "/actuator/health"
+    readiness_probe: "/actuator/health/readiness"
+    liveness_probe: "/actuator/health/liveness"
+    environment_variables:
+      - name: "SPRING_PROFILES_ACTIVE"
+        value: "staging"  # o "production"
+      - name: "SERVER_PORT"
+        value: "8084"
+      - name: "SPRING_KAFKA_BOOTSTRAP_SERVERS"
+        value: "kafka-cluster:9092"
+    
+  delivery-service:
+    port: 8083
+    health_check: "/actuator/health"
+    readiness_probe: "/actuator/health/readiness"
+    liveness_probe: "/actuator/health/liveness"
+    environment_variables:
+      - name: "SPRING_PROFILES_ACTIVE"
+        value: "staging"  # o "production"
+      - name: "SERVER_PORT"
+        value: "8083"
+      - name: "SPRING_KAFKA_BOOTSTRAP_SERVERS"
+        value: "kafka-cluster:9092"
+
+# Configuración de infraestructura
+infrastructure:
+  database:
+    type: "postgresql"  # o "mysql", "oracle"
+    version: "13"
+    replicas: 1
+    
+  message_broker:
+    type: "kafka"  # o "rabbitmq", "redis"
+    version: "3.5.0"
+    replicas: 3
+    
+  monitoring:
+    prometheus: true
+    grafana: true
+    jaeger: true  # para distributed tracing
+    
+  ingress:
+    type: "nginx"  # o "traefik", "istio"
+    ssl: true
+    domain: "hexagonal-microservices.com"
+
+# Configuración de CI/CD
+ci_cd:
+  auto_approval: false
+  manual_approval: true
+  rollback_enabled: true
+  canary_deployment: false
+  
+  notifications:
+    slack: true
+    email: true
+    teams: false
+    
+  security:
+    image_scanning: true
+    vulnerability_scanning: true
+    secrets_scanning: true
+
+# Configuración de monitoreo
+monitoring:
+  metrics:
+    - jvm_memory_usage
+    - http_requests_total
+    - response_time_p95
+    - error_rate
+    
+  alerts:
+    - name: "High Error Rate"
+      condition: "error_rate > 5%"
+      duration: "5m"
+      
+    - name: "High Response Time"
+      condition: "response_time_p95 > 2s"
+      duration: "5m"
+      
+    - name: "High Memory Usage"
+      condition: "jvm_memory_usage > 80%"
+      duration: "10m"
+
+# Configuración de backup
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  retention: "30d"
+  storage:
+    type: "s3"  # o "gcs", "azure"
+    bucket: "hexagonal-microservices-backups" 
