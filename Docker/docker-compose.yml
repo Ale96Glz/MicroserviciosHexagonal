@@ -44,9 +44,7 @@ services:
       - microservices-network
 
   orders-service:
-    build:
-      context: ../hexagonal-orders-service
-      dockerfile: Dockerfile
+    image: ghcr.io/ale96glz/microservicioshexagonal/orders-service:main
     container_name: orders-service
     ports:
       - "8084:8084"
@@ -65,9 +63,7 @@ services:
     restart: unless-stopped
 
   delivery-service:
-    build:
-      context: ../hexagonal-delivery-service
-      dockerfile: Dockerfile
+    image: ghcr.io/ale96glz/microservicioshexagonal/delivery-service:main
     container_name: delivery-service
     ports:
       - "8083:8083"

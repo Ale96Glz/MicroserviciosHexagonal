@@ -1,0 +1,209 @@
+{
+  "id": null,
+  "title": "Dashboard Hexagonal",
+  "tags": ["hexagonal", "microservices", "ddd", "isw", "orders", "deliveries"],
+  "style": "dark",
+  "timezone": "browser",
+  "panels": [
+    {
+      "id": 1,
+      "title": "🛒 Ordenes Creadas (Ultima hora)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(increase(http_server_requests_seconds_count{job=\"orders-service\", uri=\"/api/orders\", method=\"POST\"}[1h]))",
+          "legendFormat": "Orders Created"
+        }
+      ],
+      "gridPos": {"h": 6, "w": 4, "x": 0, "y": 0},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 5},
+              {"color": "red", "value": 20}
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "✅ Ordenes Confirmadas (Ultima hora)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(increase(http_server_requests_seconds_count{job=\"orders-service\", uri=\"/api/orders/{orderNumber}/confirm\", method=\"POST\"}[1h]))",
+          "legendFormat": "Ordenes Confirmadas"
+        }
+      ],
+      "gridPos": {"h": 6, "w": 4, "x": 4, "y": 0},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 3},
+              {"color": "red", "value": 10}
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "🚚 Envíos Completados (Ultima hora)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(increase(http_server_requests_seconds_count{job=\"delivery-service\", uri=\"/api/deliveries/*/complete\", method=\"PUT\"}[1h]))",
+          "legendFormat": "Envíos Completados"
+        }
+      ],
+      "gridPos": {"h": 6, "w": 4, "x": 8, "y": 0},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 3},
+              {"color": "red", "value": 10}
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "📊 Tasa de Confirmación de Ordenes (%)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(increase(http_server_requests_seconds_count{job=\"orders-service\", uri=\"/api/orders/{orderNumber}/confirm\", method=\"POST\"}[1h])) / sum(increase(http_server_requests_seconds_count{job=\"orders-service\", uri=\"/api/orders\", method=\"POST\"}[1h])) * 100",
+          "legendFormat": "Tasa de Confirmación de Ordenes"
+        }
+      ],
+      "gridPos": {"h": 6, "w": 4, "x": 12, "y": 0},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "yellow", "value": 50},
+              {"color": "green", "value": 80}
+            ]
+          },
+          "unit": "percent",
+          "decimals": 1
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "💾 Uso de Memoria JVM",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "jvm_memory_used_bytes{job=~\"orders-service|delivery-service\"}",
+          "legendFormat": "{{job}} - {{area}}"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6}
+    },
+    {
+      "id": 6,
+      "title": "📈 Tasa de Peticiones HTTP",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(http_server_requests_seconds_count{job=~\"orders-service|delivery-service\"}[5m])",
+          "legendFormat": "{{job}} - {{uri}}"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6}
+    },
+    {
+      "id": 7,
+      "title": "⚡ Tiempo de Respuesta (95th percentil)",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{job=~\"orders-service|delivery-service\"}[5m]))",
+          "legendFormat": "{{job}} - 95th percentile"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14}
+    },
+    {
+      "id": 8,
+      "title": "🧵 Hilos Activos",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "tomcat_threads_current_threads{job=~\"orders-service|delivery-service\"}",
+          "legendFormat": "{{job}}"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 14}
+    },
+    {
+      "id": 9,
+      "title": "❌ Tasa de Errores (5xx)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "rate(http_server_requests_seconds_count{job=~\"orders-service|delivery-service\",status=~\"5..\"}[5m])",
+          "legendFormat": "{{job}} - 5xx errors"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 14}
+    },
+    {
+      "id": 10,
+      "title": "📋 Resumen de Operaciones (24h)",
+      "type": "table",
+      "targets": [
+        {
+          "expr": "sum(increase(http_server_requests_seconds_count{job=\"orders-service\", uri=\"/api/orders\", method=\"POST\"}[24h]))",
+          "legendFormat": "Total Ordenes Creadas (24h)"
+        },
+        {
+          "expr": "sum(increase(http_server_requests_seconds_count{job=\"orders-service\", uri=\"/api/orders/{orderNumber}/confirm\", method=\"POST\"}[24h]))",
+          "legendFormat": "Total Ordenes Confirmadas (24h)"
+        },
+        {
+          "expr": "sum(increase(http_server_requests_seconds_count{job=\"delivery-service\", uri=\"/api/deliveries/*/complete\", method=\"PUT\"}[24h]))",
+          "legendFormat": "Total Envíos Completados (24h)"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 22},
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "Value": "Total (24h)"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "10s"
+} 
