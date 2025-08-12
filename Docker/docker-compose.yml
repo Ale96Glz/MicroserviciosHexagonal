@@ -27,6 +27,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    networks:
+      - microservices-network
 
   redpanda-console:
     image: redpandadata/console:latest
@@ -51,6 +53,10 @@ services:
     environment:
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=redpanda:29092
       - SERVER_PORT=8084
+      - SPRING_PROFILES_ACTIVE=docker
+      - KAFKA_TOPIC_PREFIX=hexagonal-orders
+      - KAFKA_TOPIC_ENVIRONMENT=dev
+      - KAFKA_ENABLED=true
     depends_on:
       redpanda:
         condition: service_healthy
@@ -68,9 +74,58 @@ services:
     environment:
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=redpanda:29092
       - SERVER_PORT=8083
+      - SPRING_PROFILES_ACTIVE=docker
+      - KAFKA_CONSUMER_GROUP_ID=delivery-service-group
+      - KAFKA_CONSUMER_AUTO_OFFSET_RESET=earliest
+      - KAFKA_TOPIC_ORDER_CONFIRMED=hexagonal-orders-dev-order-confirmed
+      - KAFKA_TOPIC_ORDER_CREATED=hexagonal-orders-dev-order-created
     depends_on:
       redpanda:
         condition: service_healthy
+      orders-service:
+        condition: service_started
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    depends_on:
+      - orders-service
+      - delivery-service
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
     networks:
       - microservices-network
     restart: unless-stopped
@@ -78,3 +133,7 @@ services:
 networks:
   microservices-network:
     driver: bridge
+
+volumes:
+  prometheus_data:
+  grafana_data:
